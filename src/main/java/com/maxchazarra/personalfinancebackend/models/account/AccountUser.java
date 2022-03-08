@@ -11,11 +11,11 @@ public class AccountUser {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private long id;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "account_id")
 	private Account account;
 
-	@ManyToOne(cascade = CascadeType.ALL)
+	@ManyToOne(cascade = CascadeType.MERGE)
     @JoinColumn(name = "user_id")
 	private User user;
 
@@ -24,7 +24,11 @@ public class AccountUser {
 	private EAccountPermission permission;
 
     @Column(nullable = false)
-    private boolean isOwner;
+    private boolean isOwner = false;
+
+    public AccountUser() {
+
+    }
 
 	public long getId() {
 		return id;

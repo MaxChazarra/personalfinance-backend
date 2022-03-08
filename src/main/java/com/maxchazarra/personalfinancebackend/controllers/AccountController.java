@@ -1,10 +1,8 @@
 package com.maxchazarra.personalfinancebackend.controllers;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -22,7 +20,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.maxchazarra.personalfinancebackend.models.User;
 import com.maxchazarra.personalfinancebackend.models.account.Account;
+import com.maxchazarra.personalfinancebackend.models.account.AccountUser;
+import com.maxchazarra.personalfinancebackend.models.account.EAccountPermission;
 import com.maxchazarra.personalfinancebackend.repository.AccountRepository;
+import com.maxchazarra.personalfinancebackend.repository.AccountUserRepository;
 import com.maxchazarra.personalfinancebackend.repository.UserRepository;
 import com.maxchazarra.personalfinancebackend.security.services.UserDetailsImpl;
 
@@ -35,20 +36,24 @@ public class AccountController {
 	AccountRepository accountRepository;
 	@Autowired
 	UserRepository userRepository;
+	@Autowired
+	AccountUserRepository accountUserRepository;
 
 	@GetMapping("/accounts")
-	public ResponseEntity<List<Account>> getAllTutorials() {
+	public ResponseEntity<List<Account>> getAccountForCurrentUser(@AuthenticationPrincipal UserDetailsImpl user) {
 		try {
-			List<Account> tutorials = new ArrayList<Account>();
+			List<Account> accounts = new ArrayList<Account>();
 
-			accountRepository.findAll().forEach(tutorials::add);
+			User _user = userRepository.findByUsername(user.getUsername()).get();
+			accountRepository.findByUsersUser(_user).forEach(accounts::add);
 
-			if (tutorials.isEmpty()) {
+			if (accounts.isEmpty()) {
 				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
 			}
 
-			return new ResponseEntity<>(tutorials, HttpStatus.OK);
+			return new ResponseEntity<>(accounts, HttpStatus.OK);
 		} catch (Exception e) {
+			System.out.println(e.toString());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -65,19 +70,23 @@ public class AccountController {
 	}
 
 	@PostMapping("/accounts")
-	public ResponseEntity<Account> createTutorial(@RequestBody Account tutorial, @AuthenticationPrincipal UserDetailsImpl user) {
+	public ResponseEntity<Account> createAccountForCurrentUser(@RequestBody Account tutorial, @AuthenticationPrincipal UserDetailsImpl user) {
 		try {
-			Account _tutorial = new Account(tutorial.getTitle(), tutorial.getDescription());
-
-			Set<User> _users = new HashSet<>();
+			Account _account = new Account(tutorial.getTitle(), tutorial.getDescription(),0);
+			_account = accountRepository.save(_account);
+			
 			User _user = userRepository.findByUsername(user.getUsername()).get();
+			
+			AccountUser _accountUser = new AccountUser();
+			_accountUser.setAccount(_account);
+			_accountUser.setUser(_user);
+			_accountUser.setIsOwner(true);
+			_accountUser.setPermission(EAccountPermission.PERMISSION_ALL);
+			_accountUser = accountUserRepository.save(_accountUser);
 
-			_users.add(_user);
-			//_tutorial.setUsers(_users);
-
-			_tutorial = accountRepository.save(_tutorial);
-			return new ResponseEntity<>(_tutorial, HttpStatus.CREATED);
+			return new ResponseEntity<>(_account, HttpStatus.CREATED);
 		} catch (Exception e) {
+			System.out.println(e.toString());
 			return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 	}
@@ -115,20 +124,6 @@ public class AccountController {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
-	}
-
-	@GetMapping("/accounts/user")
-	public ResponseEntity<List<Account>> findByPublished(@AuthenticationPrincipal User user) {
-		try {
-			List<Account> accounts = accountRepository.findAll();
-
-			if (accounts.isEmpty()) {
-				return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-			}
-			return new ResponseEntity<>(accounts, HttpStatus.OK);
-		} catch (Exception e) {
-			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-		}
 	}
 
 }

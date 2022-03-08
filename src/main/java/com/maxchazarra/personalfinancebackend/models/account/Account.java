@@ -5,6 +5,8 @@ import java.util.Set;
 
 import javax.persistence.*;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "accounts")
 public class Account {
@@ -22,19 +24,22 @@ public class Account {
 	@Column(name = "balance")
 	private double balance;
 
-	@OneToMany(mappedBy="account")
+	@JsonIgnore
+	@OneToMany(mappedBy="account", fetch=FetchType.EAGER)
 	private Set<AccountUser> users = new HashSet<>();
 
-	@OneToMany(mappedBy="account")
+	@JsonIgnore
+	@OneToMany(mappedBy="account", fetch=FetchType.EAGER)
 	private Set<AccountCategory> categories = new HashSet<>();
 
 	public Account() {
 
 	}
 
-	public Account(String title, String description) {
+	public Account(String title, String description, double balance) {
 		this.title = title;
 		this.description = description;
+		this.balance = balance;
 	}
 
 	public long getId() {
@@ -65,19 +70,19 @@ public class Account {
 		this.balance = balance;
 	}
 
-	public Set<AccountUser> getAccounts() {
+	public Set<AccountUser> getUsers() {
 		return users;
 	}
 
-	public void setAccounts(Set<AccountUser> users) {
+	public void setUsers(Set<AccountUser> users) {
 		this.users = users;
 	}
 
-	public Set<AccountCategory> getOperations() {
+	public Set<AccountCategory> getCategories() {
 		return categories;
 	}
 
-	public void setOperations(Set<AccountCategory> categories) {
+	public void setCategories(Set<AccountCategory> categories) {
 		this.categories = categories;
 	}
 

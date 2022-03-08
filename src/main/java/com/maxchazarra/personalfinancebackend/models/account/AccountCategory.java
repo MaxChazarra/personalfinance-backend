@@ -24,7 +24,7 @@ public class AccountCategory {
     @JoinColumn(name = "account_id")
 	private Account account;
 
-	@OneToMany(mappedBy="accountCategory")
+	@OneToMany(mappedBy="accountCategory", fetch=FetchType.EAGER)
 	private Set<AccountOperation> operations = new HashSet<>();
 
     public AccountCategory() {
