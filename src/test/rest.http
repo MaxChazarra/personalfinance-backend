@@ -1,0 +1,36 @@
+@baseUrl = http://localhost:8080/api
+
+# @name login
+POST {{baseUrl}}/auth/signin/ HTTP/1.1
+Content-Type: application/json
+
+{
+    "username": "Max",
+    "password": "maxence8"
+}
+
+###
+
+@authToken = {{login.response.body.accessToken}}
+
+# @name createComment
+POST {{baseUrl}}/accounts HTTP/1.1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+    "title": "fake content"
+}
+
+###
+
+# @name Test
+GET {{baseUrl}}/accounts HTTP/1.1
+Authorization: Bearer {{authToken}}
+
+@commentId = {{createComment.response.body.$.id}}
+
+# @name getCreatedComment
+GET {{baseUrl}}/accounts/{{commentId}} HTTP/1.1
+Authorization: Bearer {{authToken}}
+

@@ -8,6 +8,8 @@ import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
 
+import com.maxchazarra.personalfinancebackend.models.account.AccountUser;
+
 @Entity
 @Table(	name = "users", 
 		uniqueConstraints = { 
@@ -32,11 +34,14 @@ public class User {
 	@Size(max = 120)
 	private String password;
 
-	@ManyToMany(fetch = FetchType.LAZY)
+	@ManyToMany(fetch = FetchType.EAGER)
 	@JoinTable(	name = "user_roles", 
 				joinColumns = @JoinColumn(name = "user_id"), 
 				inverseJoinColumns = @JoinColumn(name = "role_id"))
 	private Set<Role> roles = new HashSet<>();
+
+	@OneToMany(mappedBy="user")
+	private Set<AccountUser> accounts = new HashSet<>();
 
 	public User() {
 	}
@@ -85,5 +90,13 @@ public class User {
 
 	public void setRoles(Set<Role> roles) {
 		this.roles = roles;
+	}
+
+	public Set<AccountUser> getAccounts() {
+		return accounts;
+	}
+
+	public void setAccounts(Set<AccountUser> accounts) {
+		this.accounts = accounts;
 	}
 }
